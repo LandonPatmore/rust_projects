@@ -88,7 +88,7 @@ impl Player {
     let bet_amount = match should_min_bet {
       true => betting.min_bet,
       false => rng.random_range(
-        betting.min_bet..if (self.cash <= betting.max_bet) {
+        betting.min_bet..if self.cash <= betting.max_bet {
           self.cash
         } else {
           betting.max_bet
@@ -101,8 +101,8 @@ impl Player {
     bet_amount
   }
 
-  pub fn turn(mut self, dealer_visible_card: &Card) -> Play {
-    if (dealer_visible_card.value() == 11) {
+  pub fn turn(self, dealer_visible_card: &Card) -> Play {
+    if dealer_visible_card.value() == 11 {
       return if (self.total()) >= 17 { Stand } else { Hit };
     }
 

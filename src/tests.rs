@@ -5,7 +5,7 @@ mod tests {
   use crate::structs::CardRank::Three;
   use crate::structs::Play::Hit;
   use crate::structs::Suit::Hearts;
-  use super::*;
+  
   
   #[test]
   fn player_hits_properly() {
