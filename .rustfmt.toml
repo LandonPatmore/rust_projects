@@ -1,0 +1,8 @@
+brace_style = "PreferSameLine"
+fn_params_layout = "Vertical"
+fn_single_line = true
+imports_layout = "Vertical"
+imports_granularity = "Module"
+reorder_impl_items = true
+group_imports = "StdExternalCrate"
+tab_spaces = 2
