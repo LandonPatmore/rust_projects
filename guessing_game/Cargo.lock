@@ -9,6 +9,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c8214115b7bf84099f1309324e63141d4c5d7cc26862f97a0a857dbefe165bd"
 
 [[package]]
+<<<<<<<< HEAD:guessing_game/Cargo.lock
+========
+name = "black_jack"
+version = "0.1.0"
+dependencies = [
+ "rand",
+ "strum",
+ "strum_macros",
+]
+
+[[package]]
+>>>>>>>> 576075a (working on blackjack):black_jack/Cargo.lock
 name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
