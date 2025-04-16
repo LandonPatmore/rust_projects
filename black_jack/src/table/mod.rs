@@ -7,7 +7,7 @@ use crate::table::seat::Seat;
 pub struct Table {
   betting: Betting,
   pub deck: Deck,
-  pub seats: Vec<Seat>,
+  pub seats: [Seat; 7],
 }
 
 impl Table {
@@ -16,7 +16,7 @@ impl Table {
     deck: Deck,
   ) -> Table {
     // 1 dealer, 6 players
-    let seats: Vec<Seat> = (0..=6).map(|_| Seat::new()).collect();
+    let seats = std::array::from_fn(|i| Seat::new());
 
     Table {
       betting,
@@ -35,7 +35,7 @@ impl Table {
         return;
       }
     }
-    
+
     eprintln!("Could not add player to table since all seats are occupied");
   }
 
@@ -43,7 +43,7 @@ impl Table {
     &mut self,
     index: usize,
   ) {
-    self.seats.remove(index);
+    self.seats[index].remove_player();
   }
 }
 

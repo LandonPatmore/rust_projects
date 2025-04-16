@@ -2,12 +2,13 @@ use crate::deck::Deck;
 use crate::player::Player;
 use crate::table::Table;
 use crate::table::betting::Betting;
+use std::fmt;
 use std::rc::Rc;
 
 #[derive(Debug)]
 pub struct Game {
   pub table: Table,
-  current_turn: Option<Rc<Player>>,
+  // current_turn: Option<Rc<Player>>,
 }
 
 impl Game {
@@ -22,35 +23,21 @@ impl Game {
 
     Game {
       table,
-      current_turn: None,
+      // current_turn: None,
     }
   }
 
-  pub fn add_player(
-    &mut self,
-    player: Player,
-  ) {
-    self.table.add_player(player);
-  }
-
-  pub fn remove_player(
-    &mut self,
-    index: usize,
-  ) {
-    self.table.seats.remove(index);
-  }
-
-  // TODO: Make sure we deal with cut card, or maybe we just reshuffle on each new round?
   // we deal two cards to each person
   pub fn initialize_round(&mut self) {
-    for _ in 0..2 {
+    (0..2).for_each(|_| {
       self
         .table
         .seats
         .iter_mut()
         .filter(|seat| seat.has_player())
         .for_each(|seat| {
-          // loop until the player gets a card
+          // loop until the player gets a card, since pop may come back with nothing
+          // which should never happen, but defensive programming
           loop {
             let card = self.table.deck.cards.pop();
 
@@ -63,6 +50,43 @@ impl Game {
             }
           }
         })
-    }
+    })
+  }
+
+  pub fn generate_players(&mut self) {
+    (0..self.table.seats.len() - 1).for_each(|index| {
+      self.table.add_player(Player::new(
+        fmt::format(format_args!("AI #{}", index + 1)),
+        false,
+        false,
+        100,
+      ))
+    });
+    
+    self
+      .table
+      .add_player(Player::new("Dealer".to_string(), true, false, 100));
+  }
+
+  fn add_player(
+    &mut self,
+    player: Player,
+  ) {
+    self.table.add_player(player);
+  }
+
+  fn remove_player(
+    &mut self,
+    index: usize,
+  ) {
+    self.table.remove_player(index);
+  }
+  
+  fn game_loop(&mut self) {
+    self.table.seats.iter().for_each(|seat| {
+      if seat.has_player() {
+        seat.total()
+      }
+    })
   }
 }
