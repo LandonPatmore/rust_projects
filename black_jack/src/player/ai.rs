@@ -5,7 +5,7 @@ use crate::player::{Play, Player};
 use crate::table::betting::Betting;
 use rand::Rng;
 
-struct Ai {
+pub struct Ai {
   player_data: PlayerData,
 }
 
@@ -77,6 +77,13 @@ impl Player for Ai {
       _ => Hit,         // If player has less than 8, always hit
     }
   }
+
+  fn deal_card(
+    &mut self,
+    card: Card,
+  ) {
+    self.player_data.cards.push(card);
+  }
 }
 
 impl Ai {
@@ -116,13 +123,6 @@ impl Ai {
       .count();
 
     initial_total - if initial_total > 21 { aces * 10 } else { 0 }
-  }
-
-  pub fn deal_card(
-    &mut self,
-    card: Card,
-  ) {
-    self.player_data.cards.push(card);
   }
 
   pub fn remove_cards(&mut self) -> Vec<Card> {

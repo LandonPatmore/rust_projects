@@ -1,17 +1,18 @@
 use crate::deck::Deck;
 use crate::player::Player;
+use crate::player::ai::Ai;
 use crate::table::Table;
 use crate::table::betting::Betting;
 use std::fmt;
 use std::rc::Rc;
 
 #[derive(Debug)]
-pub struct Game {
-  pub table: Table,
+pub struct Game<T: Player> {
+  pub table: Table<T>,
   // current_turn: Option<Rc<Player>>,
 }
 
-impl Game {
+impl<T: Player> Game<T> {
   pub fn new() -> Self {
     let table = Table::new(
       Betting {
@@ -55,14 +56,13 @@ impl Game {
 
   pub fn generate_players(&mut self) {
     (0..self.table.seats.len() - 1).for_each(|index| {
-      self.table.add_player(Player::new(
+      self.table.add_player(Ai::new(
         fmt::format(format_args!("AI #{}", index + 1)),
         false,
-        false,
         100,
-      ))
+      ));
     });
-    
+
     self
       .table
       .add_player(Player::new("Dealer".to_string(), true, false, 100));
@@ -81,7 +81,7 @@ impl Game {
   ) {
     self.table.remove_player(index);
   }
-  
+
   fn game_loop(&mut self) {
     self.table.seats.iter().for_each(|seat| {
       if seat.has_player() {

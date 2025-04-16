@@ -4,17 +4,17 @@ use crate::table::betting::Betting;
 use crate::table::seat::Seat;
 
 #[derive(Debug)]
-pub struct Table {
+pub struct Table <T : Player> {
   betting: Betting,
   pub deck: Deck,
-  pub seats: [Seat; 7],
+  pub seats: [Seat<T>; 7],
 }
 
-impl Table {
+impl <T : Player> Table<T> {
   pub fn new(
     betting: Betting,
     deck: Deck,
-  ) -> Table {
+  ) -> Table<T> {
     // 1 dealer, 6 players
     let seats = std::array::from_fn(|i| Seat::new());
 
@@ -27,7 +27,7 @@ impl Table {
 
   pub fn add_player(
     &mut self,
-    player: Player,
+    player: T,
   ) {
     for seat in &mut self.seats {
       if !seat.has_player() {

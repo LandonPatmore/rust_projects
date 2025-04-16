@@ -81,4 +81,8 @@ impl Player for Human {
   ) -> Play {
     todo!()
   }
+
+  fn deal_card(&mut self, card: Card) {
+    self.player_data.cards.push(card);
+  }
 }
