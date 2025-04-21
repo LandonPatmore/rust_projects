@@ -1,12 +1,13 @@
 use crate::deck::card::Card;
-use crate::player::Player;
+use crate::player::{PlayerActions, PlayerData};
 use crate::table::seat::RoundStatus::PLAYING;
 
 #[derive(Debug)]
-pub struct Seat<T: Player> {
-  player: Option<T>,
+pub struct Seat {
+  player: Option<PlayerData>,
   round_status: RoundStatus,
-  current_bet: u32,
+  // current_bet: u32,
+  // cards: Vec<Card>,
 }
 
 #[derive(Debug)]
@@ -17,7 +18,7 @@ pub enum RoundStatus {
   PLAYING,
 }
 
-impl<T: Player> Seat<T> {
+impl Seat {
   pub fn new() -> Self {
     Seat {
       player: None,
@@ -28,7 +29,7 @@ impl<T: Player> Seat<T> {
 
   pub fn add_player(
     &mut self,
-    player: T,
+    player: PlayerData,
   ) {
     self.player = Some(player);
   }
@@ -58,6 +59,12 @@ impl<T: Player> Seat<T> {
   ) {
     if let Some(player) = self.player.as_mut() {
       player.deal_card(card);
+    }
+  }
+  
+  pub fn total(&self) -> i32 {
+    if let Some(player) = self.player.as_ref() {
+      player
     }
   }
 }

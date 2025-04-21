@@ -1,169 +1,140 @@
+use crate::table::betting::{BetError, Betting, Play};
+use std::fmt::Debug;
+use std::io;
+use strum::IntoEnumIterator;
 use crate::deck::card::Card;
-use crate::player::player_data::PlayerData;
-use crate::table::betting::Betting;
 
-pub trait Player {
-  fn new(
-    name: String,
-    is_dealer: bool,
-    cash: u32,
-  ) -> Self;
+#[derive(Debug)]
+pub struct PlayerData {
+  name: String,
+  role: Role,
+  cash: u32,
+  current_bet: u32,
+}
 
-  fn bet(
-    &mut self,
-    betting: &Betting,
-  ) -> u32;
+#[derive(Debug, PartialEq, Eq)]
+enum Role {
+  Player,
+  Dealer,
+}
 
+#[derive(Debug)]
+struct PlayerHuman {
+  player: PlayerData,
+}
+
+trait PlayerActions {
   fn turn(
-    &self,
-    dealer_visible_card: &Card,
-  ) -> Play;
-
-  fn deal_card(
     &mut self,
-    card: Card,
-  );
+    turn_type: TurnType,
+    cards: &[Card],
+  ) -> Result<Play, BetError>;
+}
 
-  fn can_play(
-    &self,
-    cash: u32,
-    betting: &Betting,
-  ) -> bool {
-    cash >= betting.min_bet
+impl PlayerActions for PlayerHuman {
+  fn turn(
+    &mut self,
+    turn_type: TurnType,
+    cards: &[Card],
+  ) -> Result<Play, BetError> {
+    
+    !todo!()
   }
 }
 
-#[derive(Debug, PartialEq)]
-pub enum BetError {
-  TooSmall,
-  TooLarge,
-  NotEnoughCash,
+#[derive(Debug)]
+struct PlayerAi {
+  player: PlayerData,
 }
 
-#[derive(Debug, PartialEq)]
-pub enum Play {
-  Hit,
-  Stand,
-  Double,
-  Split,
+impl PlayerActions for PlayerAi {
+  fn turn(
+    &mut self,
+    turn_type: TurnType,
+    cards: &[Card],
+  ) -> Result<Play, BetError> {
+    todo!()
+  }
 }
 
-pub mod ai;
-mod human;
-mod player_data;
+#[derive(Debug)]
+enum Player {
+  Human(PlayerHuman),
+  Ai(PlayerAi),
+}
 
-// #[cfg(test)]
-// mod tests {
-//   use crate::player::Player;
-//   use crate::table::betting::Betting;
-//
-//   #[test]
-//   fn player_can_play() {
-//     let player = Player::new(String::from("P13"), false, false, 100);
-//     let betting = Betting {
-//       min_bet: 10,
-//       max_bet: 20,
-//     };
-//
-//     let result = player.can_play(&betting);
-//
-//     assert_eq!(result, true);
-//   }
-//
-//   #[test]
-//   fn player_cannot_play() {
-//     let player = Player::new(String::from("P13"), false, false, 100);
-//     let betting = Betting {
-//       min_bet: 1000000,
-//       max_bet: 2000000,
-//     };
-//
-//     let result = player.can_play(&betting);
-//
-//     assert_eq!(result, false);
-//   }
-//
-//   #[test]
-//   fn player_bets_valid_amount() {
-//     let mut player = Player::new(String::from("Landon"), false, false, 100);
-//     let betting = Betting {
-//       min_bet: 10,
-//       max_bet: 50,
-//     };
-//
-//     // Player has enough cash and bet is within the valid range
-//     let result = player.bet(&betting, 30);
-//     assert_eq!(result, Ok(30));
-//     assert_eq!(player.cash, 70); // Player's cash should decrease by the bet amount
-//   }
-//
-//   #[test]
-//   fn player_bets_too_small() {
-//     let mut player = Player::new(String::from("Landon"), false, false, 100);
-//     let betting = Betting {
-//       min_bet: 10,
-//       max_bet: 50,
-//     };
-//
-//     // Bet is too small (below min_bet)
-//     let result = player.bet(&betting, 5);
-//     assert_eq!(result, Err(TooSmall));
-//     assert_eq!(player.cash, 100); // Player's cash should remain unchanged
-//   }
-//
-//   #[test]
-//   fn player_bets_too_large() {
-//     let mut player = Player::new(String::from("Landon"), false, false, 100);
-//     let betting = Betting {
-//       min_bet: 10,
-//       max_bet: 50,
-//     };
-//
-//     // Bet is too large (above max_bet)
-//     let result = player.bet(&betting, 60);
-//     assert_eq!(result, Err(TooLarge));
-//     assert_eq!(player.cash, 100); // Player's cash should remain unchanged
-//   }
-//
-//   #[test]
-//   fn player_bets_insufficient_cash() {
-//     let mut player = Player::new(String::from("Landon"), false, false, 100);
-//     let betting = Betting {
-//       min_bet: 10,
-//       max_bet: 50,
-//     };
-//
-//     // Bet exceeds the player's available cash
-//     let result = player.bet(&betting, 200);
-//     assert_eq!(result, Err(NotEnoughCash));
-//     assert_eq!(player.cash, 100); // Player's cash should remain unchanged
-//   }
-//
-//   #[test]
-//   fn player_bets_exact_min_bet() {
-//     let mut player = Player::new(String::from("Landon"), false, false, 100);
-//     let betting = Betting {
-//       min_bet: 10,
-//       max_bet: 50,
-//     };
-//
-//     // Bet is exactly equal to the min_bet
-//     let result = player.bet(&betting, 10);
-//     assert_eq!(result, Ok(10));
-//     assert_eq!(player.cash, 90); // Player's cash should decrease by the bet amount
-//   }
-//
-//   #[test]
-//   fn player_bets_exact_max_bet() {
-//     let mut player = Player::new(String::from("Landon"), false, false, 100);
-//     let betting = Betting {
-//       min_bet: 10,
-//       max_bet: 50,
-//     };
-//
-//     // Bet is exactly equal to the max_bet
-//     let result = player.bet(&betting, 50);
-//     assert_eq!(result, Ok(50));
-//     assert_eq!(player.cash, 50); // Player's cash should decrease by the bet amount
-//   }
-// }
+enum TurnType {
+  Initial,
+  MidGame,
+}
+
+impl Player {
+  fn turn(
+    &self,
+    turn_type: TurnType,
+  ) {
+    // match self {
+    //   Player::Human(q) => q.turn(turn_type)
+    //   Player::Ai(q) => q.turn(turn_type)
+    // };
+  }
+}
+
+impl PlayerData {
+  pub fn new(
+    name: String,
+    role: Role,
+  ) -> PlayerData {
+    let cash = match role {
+      Role::Player => 100,
+      Role::Dealer => 0,
+    };
+
+    PlayerData {
+      name,
+      role,
+      cash,
+      current_bet: 0,
+    }
+  }
+
+  pub fn can_play(
+    &self,
+    betting: &Betting,
+  ) -> bool {
+    self.cash >= betting.min_bet
+  }
+
+  pub fn bet(
+    &mut self,
+    bet: u32,
+    betting: &Betting,
+  ) -> Result<u32, BetError> {
+    if (bet > self.cash) {
+      return Err(BetError::TooLarge);
+    }
+
+    if (bet < betting.min_bet) {
+      return Err(BetError::TooSmall);
+    }
+
+    if (bet > betting.max_bet) {
+      return Err(BetError::TooLarge);
+    }
+
+    self.cash -= bet;
+
+    Ok(bet)
+  }
+
+  pub fn is_dealer(&self) -> bool {
+    self.role == Role::Dealer
+  }
+
+  pub fn give_winnings(
+    &mut self,
+    cash: u32,
+  ) {
+    self.cash += cash
+  }
+}
