@@ -1,8 +1,18 @@
-use crate::table::betting::{BetError, Betting, Play};
+mod actions;
+mod ai;
+mod human;
+
+use crate::player::actions::TurnType;
+use crate::player::ai::PlayerAi;
+use crate::player::human::PlayerHuman;
+use crate::table::betting::{BetError, Betting};
 use std::fmt::Debug;
-use std::io;
-use strum::IntoEnumIterator;
-use crate::deck::card::Card;
+
+#[derive(Debug)]
+pub enum Player {
+  Human(PlayerHuman),
+  Ai(PlayerAi),
+}
 
 #[derive(Debug)]
 pub struct PlayerData {
@@ -10,74 +20,6 @@ pub struct PlayerData {
   role: Role,
   cash: u32,
   current_bet: u32,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-enum Role {
-  Player,
-  Dealer,
-}
-
-#[derive(Debug)]
-struct PlayerHuman {
-  player: PlayerData,
-}
-
-trait PlayerActions {
-  fn turn(
-    &mut self,
-    turn_type: TurnType,
-    cards: &[Card],
-  ) -> Result<Play, BetError>;
-}
-
-impl PlayerActions for PlayerHuman {
-  fn turn(
-    &mut self,
-    turn_type: TurnType,
-    cards: &[Card],
-  ) -> Result<Play, BetError> {
-    
-    !todo!()
-  }
-}
-
-#[derive(Debug)]
-struct PlayerAi {
-  player: PlayerData,
-}
-
-impl PlayerActions for PlayerAi {
-  fn turn(
-    &mut self,
-    turn_type: TurnType,
-    cards: &[Card],
-  ) -> Result<Play, BetError> {
-    todo!()
-  }
-}
-
-#[derive(Debug)]
-enum Player {
-  Human(PlayerHuman),
-  Ai(PlayerAi),
-}
-
-enum TurnType {
-  Initial,
-  MidGame,
-}
-
-impl Player {
-  fn turn(
-    &self,
-    turn_type: TurnType,
-  ) {
-    // match self {
-    //   Player::Human(q) => q.turn(turn_type)
-    //   Player::Ai(q) => q.turn(turn_type)
-    // };
-  }
 }
 
 impl PlayerData {
@@ -110,15 +52,15 @@ impl PlayerData {
     bet: u32,
     betting: &Betting,
   ) -> Result<u32, BetError> {
-    if (bet > self.cash) {
+    if bet > self.cash {
       return Err(BetError::TooLarge);
     }
 
-    if (bet < betting.min_bet) {
+    if bet < betting.min_bet {
       return Err(BetError::TooSmall);
     }
 
-    if (bet > betting.max_bet) {
+    if bet > betting.max_bet {
       return Err(BetError::TooLarge);
     }
 
@@ -137,4 +79,10 @@ impl PlayerData {
   ) {
     self.cash += cash
   }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum Role {
+  Player,
+  Dealer,
 }
