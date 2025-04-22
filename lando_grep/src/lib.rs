@@ -39,10 +39,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
   let contents =
     fs::read_to_string(config.file_path).expect("Something went wrong reading the file");
 
-  let results = match config.ignore_case {
-    true => search_case_insensitive(&config.query, &contents),
-    false => search(&config.query, &contents),
-  };
+  let results = search(config.ignore_case, &config.query, &contents);
 
   for line in results {
     println!("{}", line);
@@ -56,23 +53,16 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 // We're returning slices of the original input instead of cloning the lines,
 // so we tie the lifetimes to ensure the borrowed data stays valid
 pub fn search<'a>(
+  ignore_case: bool,
   query: &str,
   contents: &'a str,
 ) -> Vec<&'a str> {
   contents
     .lines()
-    .filter(|line| line.contains(query))
-    .collect()
-}
-
-// Same here as above
-pub fn search_case_insensitive<'a>(
-  query: &str,
-  contents: &'a str,
-) -> Vec<&'a str> {
-  contents
-    .lines()
-    .filter(|line| line.to_lowercase().contains(query))
+    .filter(|line| match ignore_case {
+      true => line.to_lowercase().contains(&query.to_lowercase()),
+      false => line.contains(query),
+    })
     .collect()
 }
 
@@ -88,7 +78,10 @@ Rust:
 safe, fast, productive.
 Pick three.";
 
-    assert_eq!(vec!["safe, fast, productive."], search(query, contents));
+    assert_eq!(
+      vec!["safe, fast, productive."],
+      search(false, query, contents)
+    );
   }
 
   #[test]
@@ -100,9 +93,6 @@ safe, fast, productive.
 Pick three.
 Trust me.";
 
-    assert_eq!(
-      vec!["Rust:", "Trust me."],
-      search_case_insensitive(query, contents)
-    );
+    assert_eq!(vec!["Rust:", "Trust me."], search(true, query, contents));
   }
 }
