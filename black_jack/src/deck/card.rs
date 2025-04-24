@@ -56,21 +56,4 @@ impl Card {
       _ => 10,
     }
   }
-
-  fn suit(&self) -> char {
-    match self.suit {
-      Suit::Spades => '\u{2660}',
-      Suit::Hearts => '\u{2665}',
-      Suit::Diamonds => '\u{2666}',
-      Suit::Clubs => '\u{2663}',
-    }
-  }
-
-  pub fn card_display(&self) {
-    println!("┌───────┐");
-    println!("│       │");
-    println!("│  {:<2}{}  │", self.value(), self.suit());
-    println!("│       │");
-    println!("└───────┘");
-  }
 }

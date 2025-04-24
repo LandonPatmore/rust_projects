@@ -1,32 +1,20 @@
-use crate::deck::Deck;
 use crate::deck::card::Card;
-use crate::game::dealer::Dealer;
-use crate::player::{Player, PlayerData};
-use betting::Betting;
-use std::fmt::format;
+use crate::deck::Deck;
 use crate::game::betting::Play;
-use crate::player;
+use crate::player::{Player, PlayerData};
+use std::fmt::format;
 
 pub mod betting;
 pub mod dealer;
 
 #[derive(Debug)]
 pub struct Game {
-  betting: Betting,
-  deck: Deck,
-  players: [Option<Player>; 6],
-  dealer: Dealer,
+  deck: Deck
 }
 
 impl Game {
   pub fn new() -> Self {
     Game {
-      betting: Betting {
-        min_bet: 10,
-        max_bet: 100,
-      },
-      players: std::array::from_fn(|_| None),
-      dealer: Dealer::new(),
       deck: Deck::new(6),
     }
   }
@@ -115,14 +103,14 @@ impl Game {
         .for_each(|player| {
           loop {
             let turn = player.turn(self.dealer.face_up_card());
-            
+
             match turn {
               Play::Hit => player.deal_card(self.deck.deal_card()),
               Play::Stand => break,
                 // TODO: Fix
               Play::Double => player.deal_card(self.deck.deal_card())
             };
-            
+
             if !player.can_keep_playing() {
               println!("You lose!");
               break
