@@ -1,5 +1,3 @@
-use strum_macros::EnumIter;
-
 #[derive(Debug)]
 pub struct Betting {
   pub min_bet: u32,
@@ -13,10 +11,10 @@ pub enum BetError {
   NotEnoughCash,
 }
 
-#[derive(Debug, PartialEq, EnumIter)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Play {
   Hit,
   Stand,
-  Double(u32),
-  Split,
+  Double,
+  // Split,
 }

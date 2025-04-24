@@ -1,9 +1,11 @@
+use std::fmt::{Debug, Formatter};
 use strum_macros::EnumIter;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Card {
   pub suit: Suit,
   pub rank: CardRank,
+  pub deck_number: usize,
 }
 
 #[derive(Debug, EnumIter, Copy, Clone, PartialEq, Eq)]
@@ -35,8 +37,9 @@ impl Card {
   pub fn new(
     suit: Suit,
     rank: CardRank,
+    deck_number: usize,
   ) -> Card {
-    Card { suit, rank }
+    Card { suit, rank, deck_number }
   }
 
   pub fn value(&self) -> usize {

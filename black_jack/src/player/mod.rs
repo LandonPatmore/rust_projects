@@ -1,42 +1,97 @@
-mod actions;
-mod ai;
-mod human;
+pub mod ai;
+pub mod human;
 
-use crate::player::actions::TurnType;
-use crate::player::ai::PlayerAi;
-use crate::player::human::PlayerHuman;
-use crate::table::betting::{BetError, Betting};
+use crate::deck::card::{Card, CardRank};
+use crate::game::betting::Play::{Double, Hit, Stand};
+use crate::game::betting::{BetError, Betting, Play};
 use std::fmt::Debug;
 
 #[derive(Debug)]
 pub enum Player {
-  Human(PlayerHuman),
-  Ai(PlayerAi),
+  Human(PlayerData),
+  Ai(PlayerData),
 }
 
 #[derive(Debug)]
 pub struct PlayerData {
   name: String,
-  role: Role,
   cash: u32,
   current_bet: u32,
+  cards: Vec<Card>,
+}
+
+pub fn total(cards: &[Card]) -> usize {
+  let initial_total = cards.iter().fold(0, |acc, card| acc + card.value());
+  let aces = cards
+    .iter()
+    .filter(|card| matches!(card.rank, CardRank::Ace))
+    .count();
+
+  initial_total - if initial_total > 21 { aces * 10 } else { 0 }
+}
+
+impl Player {
+  pub(crate) fn turn(
+    &self,
+    dealer_visible_card: &Card,
+  ) -> Play {
+    match self {
+      Player::Human(player) => human::turn(player, dealer_visible_card),
+      Player::Ai(player) => ai::turn(player, dealer_visible_card),
+    }
+  }
+
+  fn bet(
+    &mut self,
+    betting: &Betting,
+  ) -> u32 {
+    match self {
+      Player::Human(player) => human::bet(player, betting),
+      Player::Ai(player) => ai::bet(player, betting),
+    }
+  }
+
+  pub(crate) fn can_play(
+    &self,
+    betting: &Betting,
+  ) -> bool {
+    match self {
+      Self::Human(player) | Self::Ai(player) => player.can_play(betting),
+    }
+  }
+
+  fn give_winnings(
+    &mut self,
+    cash: u32,
+  ) {
+    match self {
+      Self::Human(player) | Self::Ai(player) => player.give_winnings(cash),
+    }
+  }
+
+  pub fn deal_card(
+    &mut self,
+    card: Card,
+  ) {
+    match self {
+      Self::Human(player) | Self::Ai(player) => player.deal_card(card),
+    }
+  }
+
+  pub fn can_keep_playing(&self) -> bool {
+    match self {
+      Self::Human(player) | Self::Ai(player) => total(&player.cards) <= 21,
+    }
+  }
 }
 
 impl PlayerData {
-  pub fn new(
-    name: String,
-    role: Role,
-  ) -> PlayerData {
-    let cash = match role {
-      Role::Player => 100,
-      Role::Dealer => 0,
-    };
-
+  pub fn new(name: String) -> PlayerData {
     PlayerData {
       name,
-      role,
-      cash,
+      cash: 100,
       current_bet: 0,
+      cards: Vec::new(),
     }
   }
 
@@ -69,20 +124,39 @@ impl PlayerData {
     Ok(bet)
   }
 
-  pub fn is_dealer(&self) -> bool {
-    self.role == Role::Dealer
-  }
-
   pub fn give_winnings(
     &mut self,
     cash: u32,
   ) {
     self.cash += cash
   }
-}
 
-#[derive(Debug, PartialEq, Eq)]
-enum Role {
-  Player,
-  Dealer,
+  pub fn deal_card(
+    &mut self,
+    card: Card,
+  ) {
+    self.cards.push(card);
+  }
+
+  fn possible_plays(&self) -> Vec<Play> {
+    let mut plays = Vec::new();
+
+    plays.push(Hit);
+    plays.push(Stand);
+
+    if self.can_double() {
+      plays.push(Double);
+    }
+
+    plays
+  }
+
+  fn can_double(&self) -> bool {
+    self.cards.len() == 2
+  }
+
+  // TODO: Will have to refactor cards to be vec of vec of cards
+  fn can_split(&self) -> bool {
+    todo!()
+  }
 }
